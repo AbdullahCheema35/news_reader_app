@@ -10,16 +10,33 @@ final topHeadlinesControllerProvider =
         () => TopHeadlinesController());
 
 class TopHeadlinesController extends AsyncNotifier<List<Article>> {
+  static final newsAPI = NewsAPI();
+  Preferences? currentPreferences;
+
   @override
   FutureOr<List<Article>> build() async {
-    final NewsAPI newsAPI = NewsAPI();
+    currentPreferences ??= await ref.read(preferencesControllerProvider.future);
 
-    final Preferences preferences =
-        await ref.read(preferencesControllerProvider.future);
+    if (!state.hasValue) {
+      // Fetch topHeadlines news from API
+      final topHeadlinesList =
+          await newsAPI.fetchTopHeadlines(currentPreferences!);
+      return topHeadlinesList;
+    } else {
+      return state.requireValue;
+    }
+  }
 
+  FutureOr<void> updateTopHeadlines(Preferences preferences) async {
+    currentPreferences = preferences;
     // Fetch topHeadlines news from API
-    final topHeadlinesList = await newsAPI.fetchTopHeadlines(preferences);
+    final topHeadlinesList =
+        await newsAPI.fetchTopHeadlines(currentPreferences!);
+    // Update topHeadlines news stored
+    state = AsyncData(topHeadlinesList);
+  }
 
-    return topHeadlinesList;
+  List<Article> get currentTopHeadlines {
+    return state.requireValue;
   }
 }

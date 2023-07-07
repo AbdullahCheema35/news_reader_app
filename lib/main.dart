@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:news_reader_app/StateManagement/preferences_controller.dart';
 import 'package:news_reader_app/models/article.dart';
-import 'package:news_reader_app/API/news_api.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:news_reader_app/StateManagement/top_headlines_controller.dart';
+import 'package:news_reader_app/StateManagement/preferences_controller.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -34,9 +36,9 @@ class HomeScreen extends StatelessWidget {
           children: [
             SearchBar(),
             const SizedBox(height: 16.0),
-            TopHeadlinesSection(),
-            const SizedBox(height: 16.0),
             CategoriesSection(),
+            const SizedBox(height: 16.0),
+            TopHeadlinesSection(),
           ],
         ),
       ),
@@ -62,45 +64,73 @@ class SearchBar extends StatelessWidget {
   }
 }
 
-class CategoriesSection extends StatelessWidget {
+class CategoriesSection extends ConsumerWidget {
   final List<String> categories = ['Sports', 'Technology', 'Politics'];
 
   CategoriesSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Categories',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8.0),
-        Row(
-          children: categories.map((category) {
-            return Container(
-              margin: const EdgeInsets.only(right: 8.0),
-              child: ChoiceChip(
-                label: Text(category),
-                selected: false,
-                onSelected: (selected) {
-                  // Add your category selection logic here
-                },
-              ),
-            );
-          }).toList(),
-        ),
-      ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(preferencesControllerProvider);
+
+    return state.when(
+      data: (data) {
+        // Use data
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Categories',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8.0),
+            Row(
+              children: categories.map((category) {
+                return Container(
+                  margin: const EdgeInsets.only(right: 8.0),
+                  child: ChoiceChip(
+                    label: Text(category),
+                    selected: data.categories.contains(category),
+                    onSelected: (selected) {
+                      // Category selected
+                      if (selected) {
+                        // Add category to preferences
+                        data.categories.add(category);
+                        ref
+                            .read(preferencesControllerProvider.notifier)
+                            .updatePreferences(data);
+                      } else {
+                        // Remove category from preferences
+                        data.categories.remove(category);
+                        ref
+                            .read(preferencesControllerProvider.notifier)
+                            .updatePreferences(data);
+                      }
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        );
+      },
+      loading: () {
+        // Show loading indicator
+        return const CircularProgressIndicator();
+      },
+      error: (error, stackTrace) {
+        // Show error message
+        return Text('Error: $error');
+      },
     );
   }
 }
 
-class PreferencesDrawer extends StatelessWidget {
+class PreferencesDrawer extends ConsumerWidget {
   const PreferencesDrawer({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Drawer(
       child: ListView(
         children: [
@@ -135,23 +165,20 @@ class PreferencesDrawer extends StatelessWidget {
   }
 }
 
-class TopHeadlinesSection extends StatefulWidget {
+class TopHeadlinesSection extends ConsumerStatefulWidget {
   const TopHeadlinesSection({super.key});
 
   @override
-  _TopHeadlinesSectionState createState() => _TopHeadlinesSectionState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _TopHeadlinesSectionState();
 }
 
-class _TopHeadlinesSectionState extends State<TopHeadlinesSection> {
-  late final List<Article> topHeadlines;
-  late final NewsAPI newsAPI;
+class _TopHeadlinesSectionState extends ConsumerState<TopHeadlinesSection> {
   final PageController _pageController = PageController(viewportFraction: 0.8);
 
   @override
   void initState() {
     super.initState();
-    newsAPI = NewsAPI();
-    topHeadlines = await newsAPI.fetchTopHeadlines();
     // Start the automatic scrolling
     _startScrolling();
   }
@@ -159,7 +186,12 @@ class _TopHeadlinesSectionState extends State<TopHeadlinesSection> {
   void _startScrolling() {
     Future.delayed(const Duration(seconds: 3), () {
       if (_pageController.hasClients) {
-        if (_pageController.page == topHeadlines.length - 1) {
+        if (_pageController.page ==
+            ref
+                    .read(topHeadlinesControllerProvider.notifier)
+                    .currentTopHeadlines
+                    .length -
+                1) {
           _pageController.animateToPage(
             0,
             duration: const Duration(milliseconds: 500),
@@ -184,28 +216,54 @@ class _TopHeadlinesSectionState extends State<TopHeadlinesSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Top Headlines',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8.0),
-        SizedBox(
-          height: 200.0,
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: topHeadlines.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                child: ArticleCard(article: topHeadlines[index]),
-              );
-            },
-          ),
-        ),
-      ],
+    final preferencesState = ref.watch(preferencesControllerProvider);
+    return preferencesState.when(
+      data: (preferencesData) {
+        // Use data
+        final topHeadlinesState = ref.watch(topHeadlinesControllerProvider);
+        return topHeadlinesState.when(
+          data: (topHeadlinesData) {
+            // Use data
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Top Headlines',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8.0),
+                SizedBox(
+                  height: 200,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: topHeadlinesData.length,
+                    itemBuilder: (context, index) {
+                      final article = topHeadlinesData[index];
+                      return ArticleCard(article: article);
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+          loading: () {
+            // Show loading indicator
+            return const CircularProgressIndicator();
+          },
+          error: (error, stackTrace) {
+            // Show error message
+            return Text('Error: $error');
+          },
+        );
+      },
+      loading: () {
+        // Show loading indicator
+        return const CircularProgressIndicator();
+      },
+      error: (error, stackTrace) {
+        // Show error message
+        return Text('Error: $error');
+      },
     );
   }
 }

@@ -10,29 +10,31 @@ final everythingControllerProvider =
         () => EverythingController());
 
 class EverythingController extends AsyncNotifier<List<Article>> {
+  static final newsAPI = NewsAPI();
+  Preferences? currentPreferences;
+
   @override
   FutureOr<List<Article>> build() async {
-    final NewsAPI newsAPI = NewsAPI();
+    currentPreferences ??= await ref.read(preferencesControllerProvider.future);
 
-    final Preferences preferences =
-        await ref.read(preferencesControllerProvider.future);
-
-    // Fetch everything news from API
-    final everythingList = await newsAPI.fetchEverything(preferences);
-
-    return everythingList;
-  }
-
-  List<Article> getArticles() {
-    return state.asData?.value ?? [];
-  }
-
-  Article getArticle(int index) {
-    final article = state.asData?.value[index];
-    if (article != null) {
-      return article;
+    if (!state.hasValue) {
+      // Fetch everything news from API
+      final everythingList = await newsAPI.fetchEverything(currentPreferences!);
+      return everythingList;
     } else {
-      throw Exception('Article not found');
+      return state.requireValue;
     }
+  }
+
+  List<Article> get currentEverything {
+    return state.requireValue;
+  }
+
+  FutureOr<void> updateEverything(Preferences preferences) async {
+    currentPreferences = preferences;
+    // Fetch everything news from API
+    final everythingList = await newsAPI.fetchEverything(currentPreferences!);
+    // Update everything news stored
+    state = AsyncData(everythingList);
   }
 }

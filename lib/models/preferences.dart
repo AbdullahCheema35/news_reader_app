@@ -1,7 +1,7 @@
 class Preferences {
   String? country;
   String? language;
-  String? category;
+  List<String> categories;
   String? query;
   String? from;
   String? to;
@@ -10,7 +10,7 @@ class Preferences {
   Preferences({
     this.country,
     this.language,
-    this.category,
+    this.categories = const [],
     this.query,
     this.from,
     this.to,
@@ -21,7 +21,7 @@ class Preferences {
     return Preferences(
       country: json['country'],
       language: json['language'],
-      category: json['category'],
+      categories: json['categories'],
       query: json['query'],
       from: json['from'],
       to: json['to'],
