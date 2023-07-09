@@ -11,10 +11,12 @@ class ArticlePersistence {
       final file = File(await _getFilePath());
       if (file.existsSync()) {
         final contents = await file.readAsString();
-        final decodedData = jsonDecode(contents) as List<dynamic>;
-        return decodedData
-            .map<Article>((json) => Article.fromJson(json))
-            .toList();
+        if (contents.isNotEmpty) {
+          final decodedData = jsonDecode(contents) as List<dynamic>;
+          return decodedData
+              .map<Article>((json) => Article.fromJson(json))
+              .toList();
+        }
       } else {
         createFile();
       }

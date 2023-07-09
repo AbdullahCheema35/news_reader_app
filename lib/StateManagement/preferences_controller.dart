@@ -14,9 +14,6 @@ class PreferencesController extends AsyncNotifier<Preferences> {
 
   @override
   FutureOr<Preferences> build() async {
-    print('Preferences Controller Build Method is called');
-    print('State: $state');
-
     if (!state.hasValue) {
       // Fetch preferences from local storage (present in a json file)
       final preferences = await fetchPreferences();

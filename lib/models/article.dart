@@ -1,3 +1,5 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 class Article {
   final String title;
   final String source;
@@ -7,17 +9,18 @@ class Article {
   final String? description;
   final String? content;
   final DateTime publishedAt;
-  late final String articleText;
+  late final String? articleText;
 
   Article({
     required this.title,
     required this.source,
-    this.author,
     required this.url,
+    required this.publishedAt,
+    this.author,
     this.urlToImage,
     this.description,
     this.content,
-    required this.publishedAt,
+    this.articleText,
   });
 
   factory Article.fromJson(Map<String, dynamic> json) {
@@ -30,19 +33,7 @@ class Article {
       description: json['description'],
       content: json['content'],
       publishedAt: DateTime.parse(json['publishedAt']),
+      articleText: json['articleText'],
     );
   }
-
-  // Map<String, dynamic> toJson() {
-  //   return {
-  //     'title': title,
-  //     'source': {'name': source},
-  //     'url': url,
-  //     'author': author,
-  //     'urlToImage': urlToImage,
-  //     'description': description,
-  //     'content': content,
-  //     'publishedAt': publishedAt.toIso8601String(),
-  //   };
-  // }
 }

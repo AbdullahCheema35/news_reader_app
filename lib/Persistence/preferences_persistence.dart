@@ -11,8 +11,10 @@ class PreferencesPersistence {
       final file = File(await _getFilePath());
       if (file.existsSync()) {
         final contents = await file.readAsString();
-        final decodedData = jsonDecode(contents);
-        return Preferences.fromJson(decodedData);
+        if (contents.isNotEmpty) {
+          final decodedData = jsonDecode(contents);
+          return Preferences.fromJson(decodedData);
+        }
       } else {
         createFile();
       }
@@ -25,7 +27,7 @@ class PreferencesPersistence {
   Future<void> savePreferences(Preferences preferences) async {
     try {
       final file = File(await _getFilePath());
-      final encodedData = jsonEncode(preferences);
+      final encodedData = jsonEncode(preferences.toJson());
       if (!file.existsSync()) {
         createFile();
       }
