@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:news_reader_app/API/article_scrapper_api.dart';
 import 'package:news_reader_app/models/article.dart';
@@ -121,12 +123,19 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
     } else {
       // We have to fetch the article text from the API.
       articleScrapperAPI.fetchArticleText(widget.article.url).then((value) {
+        // check if the widget is mounted
+        if (!mounted) return;
         setState(() {
           articleText = value;
           isLoading = false;
         });
       });
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override

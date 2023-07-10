@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:news_reader_app/UI/categories_section.dart';
+import 'package:news_reader_app/UI/everything_section.dart';
 import 'package:news_reader_app/UI/preferences_drawer.dart';
 import 'package:news_reader_app/UI/search_bar.dart';
 import 'package:news_reader_app/UI/top_headlines_section.dart';
@@ -30,6 +31,7 @@ class HomeScreen extends StatelessWidget {
             const TopHeadlinesSection(),
             const SizedBox(height: 16.0),
             // Create scrollable list of articles
+            const EverythingSection(),
           ],
         ),
       ),

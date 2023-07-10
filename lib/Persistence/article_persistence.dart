@@ -26,15 +26,17 @@ class ArticlePersistence {
     return [];
   }
 
-  Future<void> saveArticle(Article article) async {
+  Future<void> saveArticles(List<Article> articleList) async {
     try {
       final file = File(await _getFilePath());
-      final encodedData = jsonEncode(article);
+      final preparedData =
+          articleList.map((article) => article.toJson()).toList();
+      final encodedData = jsonEncode(preparedData);
       if (!file.existsSync()) {
         createFile();
       }
       // append to the json file
-      await file.writeAsString(encodedData, mode: FileMode.append);
+      await file.writeAsString(encodedData);
     } catch (e) {
       throw Exception('Error saving article: $e');
     }

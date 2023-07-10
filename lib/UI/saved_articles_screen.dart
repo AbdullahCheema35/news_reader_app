@@ -4,14 +4,11 @@ import 'package:news_reader_app/UI/article_card.dart';
 import 'package:news_reader_app/models/article.dart';
 import 'package:news_reader_app/StateManagement/saved_articles_controller.dart';
 
-class SavedArticlesPage extends ConsumerStatefulWidget {
-  @override
-  _SavedArticlesPageState createState() => _SavedArticlesPageState();
-}
+class SavedArticlesPage extends ConsumerWidget {
+  const SavedArticlesPage({super.key});
 
-class _SavedArticlesPageState extends ConsumerState<SavedArticlesPage> {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Saved Articles'),
@@ -38,7 +35,7 @@ Widget _returnSavedArticlesList(List<Article> savedArticles) {
     return ListView.builder(
       itemCount: savedArticles.length,
       itemBuilder: (context, index) {
-        return ArticleCard(article: savedArticles[index], saved: true);
+        return ArticleCard(article: savedArticles[index]);
       },
     );
   }

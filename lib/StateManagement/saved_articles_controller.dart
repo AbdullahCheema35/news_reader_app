@@ -30,8 +30,10 @@ class SavedArticlesController extends AsyncNotifier<List<Article>> {
           await articleScrapperAPI.fetchArticleText(article.url);
       article.articleText = articleText;
     }
-    await articlePersistence.saveArticle(article);
-    state = AsyncData(articleList..add(article));
+    final updatedList = articleList..add(article);
+    await articlePersistence.saveArticles(updatedList);
+    state = AsyncData(updatedList);
+    print('Article Saved, controller');
   }
 
   FutureOr<void> unSaveArticle(Article article) async {
@@ -40,6 +42,7 @@ class SavedArticlesController extends AsyncNotifier<List<Article>> {
     final updatedList = articleList..remove(article);
     await articlePersistence.unSaveArticle(updatedList);
     state = AsyncData(updatedList);
+    print('Article Unsaved, controller');
   }
 
   Article getArticle(int index) {

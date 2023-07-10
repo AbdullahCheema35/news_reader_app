@@ -22,19 +22,24 @@ class EverythingSection extends ConsumerWidget {
 
   Widget _returnArticlesList(List<Article> articles) {
     if (articles.isEmpty) {
-      return const Center(
-        child: Text(
-          'Enter a search term to find articles',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 20.0),
+      return const Expanded(
+        child: Center(
+          child: Text(
+            'Enter a search term to find articles',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 20.0),
+          ),
         ),
       );
     } else {
-      return ListView.builder(
-        itemCount: articles.length,
-        itemBuilder: (context, index) {
-          return ArticleCard(article: articles[index]);
-        },
+      return Expanded(
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: articles.length,
+          itemBuilder: (context, index) {
+            return ArticleCard(article: articles[index]);
+          },
+        ),
       );
     }
   }

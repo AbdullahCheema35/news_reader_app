@@ -4,34 +4,36 @@ import 'package:news_reader_app/models/article.dart';
 import 'package:news_reader_app/UI/article_detail_screen.dart';
 import 'package:news_reader_app/StateManagement/saved_articles_controller.dart';
 
-class ArticleCard extends StatelessWidget {
+class ArticleCard extends ConsumerWidget {
   final Article article;
-  final bool saved;
-  static final ref = ProviderContainer();
 
-  const ArticleCard({super.key, required this.article, this.saved = false});
+  ArticleCard({super.key, required this.article});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       child: ListTile(
         title: Text(article.title),
         subtitle: Text(article.source),
         trailing: IconButton(
-          icon: Icon(saved ? Icons.bookmark : Icons.bookmark_border),
+          icon: Icon(article.saved ? Icons.bookmark : Icons.bookmark_border),
           onPressed: () async {
             // Add your save article logic here
-            if (saved) {
+            if (article.saved) {
               // Remove article from saved articles
-              await ref
-                  .read(savedArticlesControllerProvider.notifier)
+              article.saved = false;
+              ref
+                  .watch(savedArticlesControllerProvider.notifier)
                   .unSaveArticle(article);
+              // print('Article removed from saved articles');
             } else {
               // Save article
-              await ref
-                  .read(savedArticlesControllerProvider.notifier)
+              article.saved = true;
+              ref
+                  .watch(savedArticlesControllerProvider.notifier)
                   .saveArticle(article);
+              // print('Article saved');
             }
           },
         ),
@@ -39,8 +41,7 @@ class ArticleCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  ArticleDetailScreen(article: article, savedArticle: saved),
+              builder: (context) => ArticleDetailScreen(article: article),
             ),
           );
         },

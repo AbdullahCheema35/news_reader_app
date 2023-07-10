@@ -9,7 +9,8 @@ class Article {
   final String? description;
   final String? content;
   final DateTime publishedAt;
-  late final String? articleText;
+  String? articleText;
+  bool saved;
 
   Article({
     required this.title,
@@ -21,6 +22,7 @@ class Article {
     this.description,
     this.content,
     this.articleText,
+    this.saved = false,
   });
 
   factory Article.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,22 @@ class Article {
       content: json['content'],
       publishedAt: DateTime.parse(json['publishedAt']),
       articleText: json['articleText'],
+      saved: json['saved'] ?? false,
     );
+  }
+  // Convert Article object to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'source': {'name': source},
+      'url': url,
+      'author': author,
+      'urlToImage': urlToImage,
+      'description': description,
+      'content': content,
+      'publishedAt': publishedAt.toIso8601String(),
+      'articleText': articleText,
+      'saved': saved,
+    };
   }
 }
